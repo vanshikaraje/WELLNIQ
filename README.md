@@ -1,72 +1,38 @@
-# WELLNIQ – AI Healthcare Voice Agent  
+# 🚑 WELLNIQ – AI Medical Voice Assistant
 
-**WELLNIQ** is an **AI-powered healthcare assistant** that provides **real-time medical consultations** using **voice and chat interaction**. Built with **Next.js**, **Vapi API**, and **PlayHT voices**, it enables users to interact with virtual doctors across multiple specialties for quick and accurate guidance.  
-
----
-
-## ✨ Features  
-✔ **Voice-Based Consultation** – Talk naturally to AI doctors.  
-✔ **Multiple Specialties** – General Physician, Cardiologist, Dermatologist, etc.  
-✔ **Dynamic Voice Selection** – Each doctor has a unique voice.  
-✔ **Secure Authentication** – Powered by **Clerk**.  
-✔ **Session Management** – Start and continue consultations easily.  
-✔ **Responsive UI** – Clean, modern interface using **Tailwind CSS** & **Framer Motion**.  
+**WELLNIQ** is an AI-powered virtual healthcare assistant that enables patients to consult with specialized doctors through real-time **voice and chat**. Built for accessibility, privacy, and speed — WELLNIQ delivers instant medical assistance, powered by modern AI technologies.
 
 ---
 
-## 🛠 Tech Stack  
-- **Frontend:** Next.js (App Router), React, Tailwind CSS, Framer Motion  
-- **Auth:** Clerk  
-- **Database:** Neon PostgreSQL + Drizzle ORM  
-- **AI & Voice:** Vapi API + PlayHT Voices  
-- **Deployment:** Vercel  
+## 🌟 Features
+
+- 🧠 Conversational AI for medical advice
+- 🩺 Multiple doctor specializations (General, Cardiology, etc.)
+- 🗣️ Real-time voice interaction using Vapi + PlayHT
+- 💬 Session-based chat history and storage
+- 🔐 Secure login via Clerk
+- ⚙️ Built with Next.js 14, TypeScript, and Drizzle ORM
 
 ---
 
-## 🚀 Installation  
 
-### 1. Clone the repository  
+
+## 🛠 Tech Stack
+
+| Layer           | Technology                      |
+|----------------|----------------------------------|
+| Frontend       | Next.js 14, React, Tailwind CSS  |
+| Voice AI       | Vapi SDK, PlayHT                 |
+| Auth           | Clerk                            |
+| Database       |  Drizzle ORM   |
+| Deployment     | Vercel (Recommended)             |
+
+---
+
+## 🚀 Getting Started
+
 ```bash
-git clone https://github.com/ERICSANDHU1/WELLNIQ.git
-cd WELLNIQ
-```
 
-### 2. Install dependencies  
-```bash
 npm install
-```
-
-### 3. Configure environment variables  
-Create a `.env.local` file and add:  
-```
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
-CLERK_SECRET_KEY=your_clerk_secret
-DATABASE_URL=your_neon_postgres_url
-VAPI_KEY=your_vapi_api_key
-PLAYHT_API_KEY=your_playht_api_key
-```
-
-### 4. Start the development server  
-```bash
+cp .env.example .env.local  # then add your keys
 npm run dev
-```
-
----
-
----
-
-## 📌 Roadmap  
-- ✅ Voice-based AI consultations  
-- ✅ Multiple doctor specialties  
-- ⬜ Prescription generation  
-- ⬜ Video consultations  
-
----
-
-## 🤝 Contributing  
-Contributions are welcome! Please fork this repo and submit a PR.  
-
----
-
-## 📜 License  
-This project is licensed under the **MIT License**. 
