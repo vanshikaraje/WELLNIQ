@@ -58,7 +58,6 @@ npm run dev
 - ✅ Voice-based AI consultations  
 - ✅ Multiple doctor specialties  
 - ⬜ Prescription generation  
-- ⬜ Video consultations  
 
 ---
 
