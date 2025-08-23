@@ -25,13 +25,7 @@
 
 ## 🚀 Installation  
 
-### 1. Clone the repository  
-```bash
-git clone https://github.com/ERICSANDHU1/WELLNIQ.git
-cd WELLNIQ
-```
-
-### 2. Install dependencies  
+### 1. Install dependencies  
 ```bash
 npm install
 ```
