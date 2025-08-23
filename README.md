@@ -30,7 +30,7 @@
 npm install
 ```
 
-### 3. Configure environment variables  
+### 2. Configure environment variables  
 Create a `.env.local` file and add:  
 ```
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
