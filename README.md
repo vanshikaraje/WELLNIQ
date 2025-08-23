@@ -39,7 +39,7 @@ DATABASE_URL=your_neon_postgres_url
 VAPI_KEY=your_vapi_api_key
 ```
 
-### 4. Start the development server  
+### 3. Start the development server  
 ```bash
 npm run dev
 ```
