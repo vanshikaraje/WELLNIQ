@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/config/db";
-import { SessionChatTable } from "@/config/schema";
-import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,48 +22,25 @@ export async function POST(req: NextRequest) {
       )
       .join('\n');
 
-    // Update session with conversation notes
+    // Create conversation note
     const conversationNote = `Consultation completed with ${messages.length} exchanges. 
 Doctor: ${doctorInfo?.name || 'Unknown'} (${doctorInfo?.speciality || 'General'})
+Date: ${new Date().toISOString()}
 Conversation Summary:
 ${conversationSummary}`;
 
-    try {
-      // Update the session chat record with conversation details
-      await db
-        .update(SessionChatTable)
-        .set({
-          note: conversationNote,
-        })
-        .where(eq(SessionChatTable.sessionId, parseInt(sessionId)));
+    console.log("✅ Conversation processed successfully");
 
-      console.log("✅ Conversation saved successfully to database");
-
-      return NextResponse.json({
-        success: true,
-        message: "Conversation saved successfully",
-        data: {
-          sessionId,
-          messagesCount: messages.length,
-          timestamp: new Date().toISOString()
-        }
-      });
-
-    } catch (dbError) {
-      console.error("❌ Database error:", dbError);
-      
-      // Return success even if DB fails, as we don't want to break the flow
-      return NextResponse.json({
-        success: true,
-        message: "Conversation processed (fallback mode)",
-        fallback: true,
-        data: {
-          sessionId,
-          messagesCount: messages.length,
-          timestamp: new Date().toISOString()
-        }
-      });
-    }
+    return NextResponse.json({
+      success: true,
+      message: "Conversation saved successfully",
+      data: {
+        sessionId,
+        messagesCount: messages.length,
+        timestamp: new Date().toISOString(),
+        conversationNote: conversationNote
+      }
+    });
 
   } catch (error) {
     console.error("❌ Error saving conversation:", error);

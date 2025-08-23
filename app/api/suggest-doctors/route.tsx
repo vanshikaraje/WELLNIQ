@@ -16,7 +16,7 @@ import { NextRequest, NextResponse } from "next/server";
 const doctorDatabase = [
   {
     id: "doc-1",
-    name: "Dr. Priya Sharma",
+    name: "Dr. Atul Sharma",
     specialization: "General Physician",
     keywords: ["fever", "cold", "cough", "headache", "general", "common", "flu", "body ache"]
   },
@@ -28,13 +28,13 @@ const doctorDatabase = [
   },
   {
     id: "doc-3",
-    name: "Dr. Kavya Reddy", 
+    name: "Dr.Rahul Reddy", 
     specialization: "Cardiologist",
     keywords: ["heart", "chest pain", "palpitations", "blood pressure", "cardiac", "cardiovascular"]
   },
   {
     id: "doc-4",
-    name: "Dr. Rohit Singh",
+    name: "Dr. Kavya Singh",
     specialization: "Orthopedic Surgeon", 
     keywords: ["bone", "joint", "fracture", "back pain", "knee", "shoulder", "arthritis", "muscle"]
   },
@@ -46,7 +46,7 @@ const doctorDatabase = [
   },
   {
     id: "doc-6",
-    name: "Dr. Vikram Joshi",
+    name: "Dr.Anni ",
     specialization: "Neurologist", 
     keywords: ["brain", "headache", "migraine", "seizure", "neurological", "memory", "dizziness"]
   },

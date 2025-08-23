@@ -1,479 +1,13 @@
-// "use client";
-
-// import { useParams, useRouter } from "next/navigation";
-// import React, { useEffect, useState } from "react";
-// import { Button } from "@/components/ui/button";
-// import {
-//   ArrowLeft,
-//   MessageCircle,
-//   User,
-//   Calendar,
-//   FileText,
-//   PhoneOff,
-//   PhoneCall,
-//   Circle,
-// } from "lucide-react";
-// import Vapi from "@vapi-ai/web";
-
-// interface SessionData {
-//   sessionId: string;
-//   doctorName: string;
-//   specialization: string;
-//   note: string;
-//   createdAt: string;
-//   selectedDoctor?: {
-//     voiceId: string;
-//     agentPrompt: string;
-//   };
-// }
-
-// type messages = {
-//   role: string;
-//   text: string;
-// };
-
-// function MedicalVoiceAgent() {
-//   const { sessionId } = useParams();
-//   const router = useRouter();
-//   const [sessionData, setSessionData] = useState<SessionData | null>(null);
-//   const [loading, setLoading] = useState(true);
-//   const [callStarted, setCallStarted] = useState(false);
-//   const [vapiInstance, setVapiInstance] = useState<any>();
-//   const [currentRoll, setCurrentRole] = useState<string | null>();
-//   const [LiveTranscript, setLivetranscript] = useState<string>();
-//   const [messages, setMessages] = useState<messages[]>([]);
-
-//   useEffect(() => {
-//     if (sessionId) {
-//       getSessionDetails();
-//     }
-//   }, [sessionId]);
-
-//   const getSessionDetails = async () => {
-//     try {
-//       setLoading(true);
-//       const response = await fetch(`/api/session-chat?sessionId=${sessionId}`);
-//       const result = await response.json();
-
-//       if (result.success) {
-//         setSessionData(result.data);
-//       } else {
-//         console.error("Failed to fetch session details");
-//       }
-//     } catch (error) {
-//       console.error("Error fetching session details:", error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     if (!vapiInstance) return;
-
-//     vapiInstance.on("speech-start", () => {
-//       setCurrentRole("assistant");
-//     });
-
-//     vapiInstance.on("speech-end", () => {
-//       setCurrentRole("user");
-//     });
-
-//     return () => {
-//       vapiInstance?.off("speech-start");
-//       vapiInstance?.off("speech-end");
-//     };
-//   }, [vapiInstance]);
-
-//   const StartCall = () => {
-//     if (!sessionData) return;
-
-//     const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY!);
-//     setVapiInstance(vapi);
-
-//     const vapiAgentConfig = {
-//       name: "AI Medical Doctor Voice Agent",
-//       firstMessage:
-//         "Hi there! I'm your AI Medical Assistant. I'm here to help you with any health questions or concerns you might have today. How are you feeling?",
-//       transcriber: {
-//         provider: "assembly-ai",
-//         language: "en",
-//       },
-//       voice: {
-//         provider: "playht",
-//         voiceId: sessionData.selectedDoctor?.voiceId || "chris",
-//       },
-//       model: {
-//         provider: "openai",
-//         model: "gpt-4",
-//         messages: [
-//           {
-//             role: "system",
-//             content:
-//               sessionData.selectedDoctor?.agentPrompt ||
-//               "You are a helpful medical assistant.",
-//           },
-//         ],
-//       },
-//     };
-
-//     vapi.start(vapiAgentConfig);
-
-//     vapi.on("call-start", () => {
-//       setCallStarted(true);
-//     });
-
-//     vapi.on("call-end", () => {
-//       setCallStarted(false);
-//     });
-
-//     vapi.on("message", (message) => {
-//       if (message.type === "transcript") {
-//         const { role, transcriptType, transcript } = message;
-
-//         if (transcriptType === "partial") {
-//           setLivetranscript(transcript);
-//           setCurrentRole(role);
-//         } else if (transcriptType === "final") {
-//           setMessages((prev) => [...prev, { role: role, text: transcript }]);
-//           setLivetranscript("");
-//           setCurrentRole(null);
-//         }
-//       }
-//     });
-//   };
-
-//   const endCall = () => {
-//     if (!vapiInstance) return;
-
-//     vapiInstance.stop();
-//     vapiInstance.off("call-start");
-//     vapiInstance.off("call-end");
-//     vapiInstance.off("message");
-
-//     setCallStarted(false);
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="flex items-center justify-center min-h-screen">
-//         <div className="text-center">
-//           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-//           <p className="mt-4 text-gray-600">Loading consultation...</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 p-6">
-//       <div className="max-w-4xl mx-auto">
-//         <div className="flex items-center justify-between mb-8">
-//           <Button
-//             variant="outline"
-//             onClick={() => router.push("/dashboard")}
-//             className="flex items-center gap-2"
-//           >
-//             <ArrowLeft className="h-4 w-4" />
-//             Back to Dashboard
-//           </Button>
-//           <div className="text-right">
-//             <h1 className="text-2xl font-bold text-gray-800">
-//               Medical Consultation
-//             </h1>
-//             <p className="text-gray-600">Session ID: {sessionId}</p>
-//           </div>
-//         </div>
-
-//         {sessionData && (
-//           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-//             <div className="flex items-start gap-4">
-//               <div className="bg-blue-100 p-3 rounded-full">
-//                 <User className="h-6 w-6 text-blue-600" />
-//               </div>
-//               <div className="flex-1">
-//                 <h2 className="text-xl font-semibold text-gray-800 mb-2">
-//                   {sessionData.doctorName}
-//                 </h2>
-//                 <p className="text-blue-600 font-medium mb-3 flex items-center gap-2">
-//                   <MessageCircle className="h-4 w-4" />
-//                   {sessionData.specialization}
-//                 </p>
-//                 <div className="bg-gray-50 p-4 rounded-lg mb-3">
-//                   <h3 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
-//                     <FileText className="h-4 w-4" />
-//                     Patient Notes:
-//                   </h3>
-//                   <p className="text-gray-600">{sessionData.note}</p>
-//                 </div>
-//                 <p className="text-sm text-gray-500 flex items-center gap-2">
-//                   <Calendar className="h-4 w-4" />
-//                   Started: {new Date(sessionData.createdAt).toLocaleString()}
-//                 </p>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//         <div className="bg-white rounded-lg shadow-sm p-6">
-//           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-//             <MessageCircle className="h-5 w-5" />
-//             Consultation Chat
-//           </h3>
-//           <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center space-y-3">
-//             <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-//             <p className="text-gray-500 mb-4">
-//               Ready to start your consultation with {sessionData?.doctorName}
-//             </p>
-
-//             <div className="flex justify-center items-center gap-2 mb-2">
-//               <Circle
-//                 className={`h-3 w-3 ${
-//                   callStarted ? "text-green-500" : "text-red-500"
-//                 }`}
-//               />
-//               <span className="text-sm text-gray-700">
-//                 {callStarted ? "Connected" : "Not Connected"}
-//               </span>
-//             </div>
-
-//             {!callStarted ? (
-//               <Button className="w-full max-w-xs" onClick={StartCall}>
-//                 <PhoneCall className="mr-2 h-4 w-4" />
-//                 Start Call
-//               </Button>
-//             ) : (
-//               <Button
-//                 variant="destructive"
-//                 className="w-full max-w-xs"
-//                 onClick={endCall}
-//               >
-//                 <PhoneOff className="mr-2 h-4 w-4" />
-//                 Disconnect
-//               </Button>
-//             )}
-
-//             {messages.map((msg, index) => (
-//               <div key={index} className="text-left text-gray-700">
-//                 <p>
-//                   <strong className="capitalize">{msg.role}:</strong> {msg.text}
-//                 </p>
-//               </div>
-//             ))}
-
-//             {LiveTranscript && (
-//               <Button variant="outline" className="w-full max-w-xs">
-//                 {currentRoll}: {LiveTranscript}
-//               </Button>
-//             )}
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default MedicalVoiceAgent;
-// "use client";
-
-// import { useParams, useRouter } from "next/navigation";
-// import React, { useEffect, useState } from "react";
-// import { Button } from "@/components/ui/button";
-// import { ArrowLeft, PhoneOff, PhoneCall } from "lucide-react";
-// import Vapi from "@vapi-ai/web";
-// import axios from "axios";
-// import { toast } from "react-hot-toast";
-
-// interface SessionData {
-//   sessionId: number;
-//   createdAt: string;
-//   userId: string;
-//   selectedDoctor: {
-//     name: string;
-//     speciality: string;
-//     image: string;
-//     voiceId: string;
-//     agentPrompt: string;
-//   };
-// }
-
-// const MedicalAgentPage = () => {
-//   const params = useParams();
-//   const router = useRouter();
-//   const [sessionData, setSessionData] = useState<SessionData | null>(null);
-//   const [vapiInstance, setVapiInstance] = useState<any>(null);
-//   const [isCallStarted, setCallStarted] = useState(false);
-//   const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
-//   const [livetranscript, setLivetranscript] = useState("");
-//   const [currentRole, setCurrentRole] = useState<string | null>(null);
-//   const [loading, setLoading] = useState(false);
-
-//   // Fetch session data
-//   useEffect(() => {
-//     const fetchSessionData = async () => {
-//       try {
-//         const response = await fetch(`/api/session-chat?sessionId=${params.sessionId}`);
-//         const data = await response.json();
-//         setSessionData(data.session);
-//       } catch (error) {
-//         console.error("Error fetching session data:", error);
-//       }
-//     };
-
-//     if (params.sessionId) {
-//       fetchSessionData();
-//     }
-//   }, [params.sessionId]);
-
-//   // Start call
-//   const StartCall = () => {
-//     if (!sessionData) return;
-
-//     const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY!);
-//     setVapiInstance(vapi);
-
-//     vapi.start({
-//       name: "AI Medical Assistant",
-//       firstMessage: "Hi there! I'm your AI Medical Assistant. How can I help you today?",
-//       transcriber: { 
-//         provider: "assembly-ai", 
-//         language: "en" 
-//       },
-//       voice: { 
-//         provider: "playht", 
-//         voiceId: sessionData.selectedDoctor.voiceId 
-//       },
-//       model: {
-//         provider: "openai",
-//         model: "gpt-4",
-//         messages: [{
-//           role: "system",
-//           content: sessionData.selectedDoctor.agentPrompt || "You are a helpful medical assistant.",
-//         }],
-//       },
-//     });
-
-//     vapi.on("call-start", () => setCallStarted(true));
-//     vapi.on("call-end", () => {
-//       setCallStarted(false);
-//       GenerateReport().then(() => {
-//         toast.success("Report generated successfully!");
-//         router.push("/dashboard");
-//       });
-//     });
-//     vapi.on("message", (message: any) => {
-//       if (message.type === "transcript") {
-//         const { role, transcriptType, transcript } = message;
-//         if (transcriptType === "partial") {
-//           setLivetranscript(transcript);
-//           setCurrentRole(role);
-//         } else if (transcriptType === "final") {
-//           setMessages((prev) => [...prev, { role, text: transcript }]);
-//           setLivetranscript("");
-//           setCurrentRole(null);
-//         }
-//       }
-//     });
-//   };
-
-//   // End call
-//   const endCall = async () => {
-//     setLoading(true);
-//     if (vapiInstance) {
-//       vapiInstance.stop();
-//     }
-//     setLoading(false);
-//   };
-
-//   const GenerateReport = async () => {
-//     if (!sessionData) return;
-    
-//     try {
-//       await axios.post("/api/medical-report", {
-//         messages,
-//         sessionDetails: sessionData,
-//         sessionId: sessionData.sessionId,
-//       });
-//     } catch (error) {
-//       console.error("Error generating report:", error);
-//       toast.error("Failed to generate report");
-//     }
-//   };
-
-//   return (
-//     <div className="flex flex-col h-screen">
-//       {/* Header */}
-//       <div className="p-4 bg-gray-100 flex items-center justify-between">
-//         <div className="flex items-center gap-2">
-//           <ArrowLeft className="cursor-pointer" onClick={() => router.back()} />
-//           <h2 className="text-xl font-bold">Medical Consultation</h2>
-//         </div>
-//         <div>
-//           {isCallStarted ? (
-//             <Button variant="destructive" onClick={endCall} disabled={loading}>
-//               <PhoneOff className="w-4 h-4 mr-2" />
-//               End Call
-//             </Button>
-//           ) : (
-//             <Button onClick={StartCall}>
-//               <PhoneCall className="w-4 h-4 mr-2" />
-//               Start Call
-//             </Button>
-//           )}
-//         </div>
-//       </div>
-
-//       {/* Doctor Info */}
-//       {sessionData && (
-//         <div className="p-4 border-b flex items-center gap-6">
-//           <img
-//             src={sessionData.selectedDoctor.image}
-//             alt="doctor"
-//             className="w-16 h-16 rounded-full object-cover"
-//           />
-//           <div>
-//             <h3 className="font-semibold text-lg">{sessionData.selectedDoctor.name}</h3>
-//             <p className="text-sm text-gray-500">{sessionData.selectedDoctor.speciality}</p>
-//             <p className="text-sm text-gray-500">Session ID: {sessionData.sessionId}</p>
-//           </div>
-//         </div>
-//       )}
-
-//       {/* Transcript Section */}
-//       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-//         {messages.map((m, i) => (
-//           <div
-//             key={i}
-//             className={`p-3 rounded-md max-w-[90%] break-words ${
-//               m.role === "user"
-//                 ? "bg-blue-100 text-blue-900 ml-auto"
-//                 : "bg-green-100 text-green-900 mr-auto"
-//             }`}
-//           >
-//             <strong>{m.role === "user" ? "You" : "Doctor"}: </strong>
-//             {m.text}
-//           </div>
-//         ))}
-//         {livetranscript && (
-//           <div className="p-3 rounded-md bg-yellow-100 text-yellow-900">
-//             <strong>{currentRole === "user" ? "You" : "Doctor"} (typing...): </strong>
-//             {livetranscript}
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default MedicalAgentPage;
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PhoneCall, PhoneOff } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, PhoneCall, PhoneOff, FileText, User, Stethoscope, AlertTriangle, Calendar, Pill, Activity } from "lucide-react";
 import Vapi from "@vapi-ai/web";
 import axios from "axios";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 interface SessionData {
   sessionId: number;
@@ -488,6 +22,21 @@ interface SessionData {
   };
 }
 
+interface MedicalReport {
+  id: string;
+  sessionId: string;
+  patientSummary: string;
+  chiefComplaints: string[];
+  symptoms: string[];
+  assessment: string;
+  recommendations: string[];
+  followUp: string;
+  medications: string[];
+  riskFactors: string[];
+  reportDate: string;
+  consultationSummary: string;
+}
+
 const MedicalAgentPage = () => {
   const { sessionId } = useParams();
   const router = useRouter();
@@ -495,192 +44,522 @@ const MedicalAgentPage = () => {
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [vapi, setVapi] = useState<any>(null);
   const [isCallStarted, setIsCallStarted] = useState(false);
-  const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
+  const [messages, setMessages] = useState<{ role: string; text: string; timestamp?: string }[]>([]);
   const [liveTranscript, setLiveTranscript] = useState("");
   const [currentRole, setCurrentRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
+  const [medicalReport, setMedicalReport] = useState<MedicalReport | null>(null);
+  const [showReport, setShowReport] = useState(false);
+  const [conversationSaved, setConversationSaved] = useState(false);
 
   // 🚀 Fetch Session Info
   useEffect(() => {
     if (!sessionId) return;
-    fetch(`/api/session-chat?sessionId=${sessionId}`)
-      .then((res) => res.json())
-      .then((data) => setSessionData(data.session))
-      .catch((err) => console.error("Error fetching session:", err));
-  }, [sessionId]);
+    
+    const fetchSession = async () => {
+      try {
+        const response = await fetch(`/api/session-chat?sessionId=${sessionId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setSessionData(data.session);
+          console.log("✅ Session data loaded:", data.session);
+        } else {
+          toast.error("Failed to load session data");
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        console.error("❌ Error fetching session:", error);
+        toast.error("Error loading session");
+        router.push("/dashboard");
+      }
+    };
+
+    fetchSession();
+  }, [sessionId, router]);
 
   // 📞 Start Voice Call
   const startCall = () => {
-    if (!sessionData) return;
-    const vapiInstance = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY!);
-    setVapi(vapiInstance);
+    if (!sessionData) {
+      toast.error("Session data not loaded");
+      return;
+    }
 
-    vapiInstance.on("call-start", () => setIsCallStarted(true));
+    try {
+      const vapiInstance = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY!);
+      setVapi(vapiInstance);
 
-    vapiInstance.on("call-end", () => {
-      setIsCallStarted(false);
-      setReportLoading(true);
-      generateReport()
-        .then(() => {
-          setReportGenerated(true);
-          setReportLoading(false);
-          toast.success("Medical Report Generated!");
-        })
-        .catch(() => {
-          toast.error("Failed to generate report");
-          setReportLoading(false);
-        });
-    });
+      vapiInstance.on("call-start", () => {
+        setIsCallStarted(true);
+        setMessages([]); // Clear previous messages
+        toast.success("Call started successfully!");
+        console.log("📞 Call started");
+      });
 
-    vapiInstance.on("message", (message: any) => {
-      if (message.type === "transcript") {
-        const { role, transcriptType, transcript } = message;
-        if (transcriptType === "partial") {
-          setLiveTranscript(transcript);
-          setCurrentRole(role);
-        } else if (transcriptType === "final") {
-          setMessages((prev) => [...prev, { role, text: transcript }]);
-          setLiveTranscript("");
-          setCurrentRole(null);
+      vapiInstance.on("call-end", async () => {
+        console.log("📞 Call ended, processing...");
+        setIsCallStarted(false);
+        setLoading(true);
+        
+        // Start the post-call process
+        await handleCallEnd();
+      });
+
+      vapiInstance.on("message", (message: any) => {
+        if (message.type === "transcript") {
+          const { role, transcriptType, transcript } = message;
+          
+          if (transcriptType === "partial") {
+            setLiveTranscript(transcript);
+            setCurrentRole(role);
+          } else if (transcriptType === "final") {
+            const newMessage = { 
+              role, 
+              text: transcript,
+              timestamp: new Date().toISOString()
+            };
+            
+            setMessages((prev) => [...prev, newMessage]);
+            setLiveTranscript("");
+            setCurrentRole(null);
+            
+            console.log(`💬 New message - ${role}:`, transcript);
+          }
         }
-      }
-    });
+      });
 
-    vapiInstance.start({
-      name: "AI Medical Assistant",
-      firstMessage: "Hi! I'm your AI doctor. How can I help today?",
-      transcriber: {
-        provider: "assembly-ai",
-        language: "en",
-      },
-      voice: {
-        provider: "playht",
-        voiceId: sessionData.selectedDoctor.voiceId,
-      },
-      model: {
-        provider: "openai",
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: sessionData.selectedDoctor.agentPrompt || "You are a helpful medical assistant.",
-          },
-        ],
-      },
-    });
+      vapiInstance.on("error", (error: any) => {
+        console.error("❌ Vapi error:", error);
+        toast.error("Call error occurred");
+        setIsCallStarted(false);
+      });
+
+      // Start the call
+      vapiInstance.start({
+        name: "AI Medical Assistant",
+        firstMessage: `Hi! I'm Dr. ${sessionData.selectedDoctor.name}, your AI medical assistant specializing in ${sessionData.selectedDoctor.speciality}. How can I help you today?`,
+        transcriber: {
+          provider: "assembly-ai",
+          language: "en",
+        },
+        voice: {
+          provider: "playht",
+          voiceId: sessionData.selectedDoctor.voiceId,
+        },
+        model: {
+          provider: "openai",
+          model: "gpt-4",
+          messages: [
+            {
+              role: "system",
+              content: sessionData.selectedDoctor.agentPrompt || `You are Dr. ${sessionData.selectedDoctor.name}, a professional medical assistant specializing in ${sessionData.selectedDoctor.speciality}. Provide helpful, accurate medical guidance while being empathetic and professional.`,
+            },
+          ],
+        },
+      });
+
+    } catch (error) {
+      console.error("❌ Error starting call:", error);
+      toast.error("Failed to start call");
+    }
   };
 
   // ❌ End Call
   const endCall = () => {
     if (!vapi) return;
+    
     setLoading(true);
-    vapi.stop();
-    setIsCallStarted(false);
-    setLoading(false);
+    toast.info("Ending call...");
+    
+    try {
+      vapi.stop();
+    } catch (error) {
+      console.error("❌ Error ending call:", error);
+      setIsCallStarted(false);
+      setLoading(false);
+    }
   };
 
-  // 📋 Generate Report API
-  const generateReport = async () => {
-    if (!sessionData) return;
-    const res = await axios.post("/api/medical-report", {
-      messages,
-      sessionDetails: sessionData,
-      sessionId: sessionData.sessionId,
-    });
-    return res.data;
+  // 🔄 Handle Call End Process
+  const handleCallEnd = async () => {
+    try {
+      console.log("🔄 Starting post-call processing...");
+      console.log("📝 Messages to process:", messages.length);
+
+      if (messages.length === 0) {
+        toast.error("No conversation data to process");
+        setLoading(false);
+        return;
+      }
+
+      // Step 1: Save Conversation
+      setReportLoading(true);
+      toast.info("Saving conversation...");
+      
+      const conversationResponse = await axios.post("/api/save-conversation", {
+        sessionId: sessionData?.sessionId,
+        messages: messages,
+        doctorInfo: sessionData?.selectedDoctor
+      });
+
+      if (conversationResponse.data.success) {
+        setConversationSaved(true);
+        console.log("✅ Conversation saved successfully");
+        toast.success("Conversation saved!");
+      } else {
+        console.warn("⚠️ Conversation save returned non-success:", conversationResponse.data);
+      }
+
+      // Step 2: Generate Medical Report
+      toast.info("Generating medical report with AI...");
+      
+      const reportResponse = await axios.post("/api/medical-report", {
+        sessionId: sessionData?.sessionId,
+        messages: messages,
+        sessionDetails: sessionData
+      });
+
+      if (reportResponse.data.success) {
+        setMedicalReport(reportResponse.data.report);
+        setReportGenerated(true);
+        console.log("✅ Medical report generated successfully");
+        console.log("📋 Report data:", reportResponse.data.report);
+        toast.success("Medical report generated successfully!");
+      } else {
+        throw new Error(reportResponse.data.error || "Failed to generate report");
+      }
+
+    } catch (error) {
+      console.error("❌ Error in post-call processing:", error);
+      toast.error("Failed to process consultation data");
+    } finally {
+      setLoading(false);
+      setReportLoading(false);
+    }
   };
 
-  // 🧭 Navigate
-  const viewReport = () => router.push(`/dashboard/report/${sessionData?.sessionId}`);
-  const goToDashboard = () => router.push("/dashboard");
+  // 📋 View Report
+  const viewFullReport = () => {
+    if (sessionData?.sessionId) {
+      router.push(`/dashboard/report/${sessionData.sessionId}`);
+    }
+  };
+
+  // 🏠 Go to Dashboard
+  const goToDashboard = () => {
+    router.push("/dashboard");
+  };
+
+  if (!sessionData) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-b-transparent rounded-full mx-auto mb-4"></div>
+          <p>Loading session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
-      <div className="p-4 bg-gray-100 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <ArrowLeft className="cursor-pointer" onClick={() => router.back()} />
-          <h2 className="text-xl font-bold">Medical Consultation</h2>
+      <div className="p-6 bg-white/80 backdrop-blur-sm border-b border-blue-200 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Medical Consultation</h2>
+            <p className="text-sm text-gray-600">Session #{sessionData.sessionId}</p>
+          </div>
         </div>
         <div>
           {isCallStarted ? (
-            <Button onClick={endCall} variant="destructive" disabled={loading}>
+            <Button onClick={endCall} variant="destructive" disabled={loading} className="shadow-lg">
               <PhoneOff className="mr-2 h-4 w-4" />
-              End Call
+              {loading ? "Ending..." : "End Consultation"}
             </Button>
           ) : (
-            <Button onClick={startCall}>
+            <Button onClick={startCall} className="bg-green-600 hover:bg-green-700 shadow-lg text-white">
               <PhoneCall className="mr-2 h-4 w-4" />
-              Start Call
+              Start Consultation
             </Button>
           )}
         </div>
       </div>
 
       {/* Doctor Info */}
-      {sessionData && (
-        <div className="p-4 border-b flex items-center gap-6">
-          <img
-            src={sessionData.selectedDoctor.image}
-            alt="doctor"
-            className="w-16 h-16 rounded-full object-cover"
-          />
-          <div>
-            <h3 className="font-semibold text-lg">{sessionData.selectedDoctor.name}</h3>
-            <p className="text-sm text-gray-500">{sessionData.selectedDoctor.speciality}</p>
-            <p className="text-sm text-gray-500">Session ID: {sessionData.sessionId}</p>
+      <div className="m-6 mb-4 bg-white/90 backdrop-blur-sm border border-blue-200 shadow-lg rounded-lg">
+        <div className="p-6">
+          <div className="flex items-center gap-6">
+            <img
+              src={sessionData.selectedDoctor.image}
+              alt="doctor"
+              className="w-20 h-20 rounded-full object-cover border-4 border-blue-200 shadow-md"
+            />
+            <div className="flex-1">
+              <h3 className="font-bold text-xl text-gray-800">{sessionData.selectedDoctor.name}</h3>
+              <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">
+                <Stethoscope className="w-3 h-3 mr-1" />
+                {sessionData.selectedDoctor.speciality}
+              </div>
+              <p className="text-sm text-gray-600">
+                Ready to assist with your health concerns
+              </p>
+            </div>
+            <div className="text-right">
+              <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${
+                isCallStarted 
+                  ? "bg-green-100 text-green-800" 
+                  : "bg-gray-100 text-gray-600"
+              }`}>
+                <div className={`w-2 h-2 rounded-full mr-2 ${
+                  isCallStarted ? "bg-green-500 animate-pulse" : "bg-gray-400"
+                }`}></div>
+                {isCallStarted ? "Active Call" : "Ready"}
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.map((m, i) => (
+      <div className="flex-1 overflow-y-auto px-6 space-y-4">
+        {messages.length === 0 && !isCallStarted && (
+          <div className="bg-white/60 backdrop-blur-sm border border-blue-200 rounded-lg">
+            <div className="p-8 text-center">
+              <PhoneCall className="w-12 h-12 mx-auto mb-4 text-blue-500" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Ready to Start Your Consultation</h3>
+              <p className="text-gray-600">Click "Start Consultation" to begin your voice session with the AI doctor.</p>
+            </div>
+          </div>
+        )}
+
+        {messages.map((message, index) => (
           <div
-            key={i}
-            className={`p-3 rounded-md max-w-[80%] ${
-              m.role === "user"
-                ? "ml-auto bg-blue-100 text-blue-900"
-                : "mr-auto bg-green-100 text-green-900"
-            }`}
+            key={index}
+            className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
           >
-            <strong>{m.role === "user" ? "You" : "Doctor"}:</strong> {m.text}
+            <div
+              className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
+                message.role === "user"
+                  ? "bg-blue-600 text-white ml-12"
+                  : "bg-white text-gray-800 mr-12 border border-blue-200"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                {message.role === "user" ? (
+                  <User className="w-4 h-4" />
+                ) : (
+                  <Stethoscope className="w-4 h-4" />
+                )}
+                <span className="text-sm font-medium">
+                  {message.role === "user" ? "You" : `Dr. ${sessionData.selectedDoctor.name}`}
+                </span>
+              </div>
+              <p className="leading-relaxed">{message.text}</p>
+              {message.timestamp && (
+                <p className={`text-xs mt-2 ${message.role === "user" ? "text-blue-200" : "text-gray-500"}`}>
+                  {new Date(message.timestamp).toLocaleTimeString()}
+                </p>
+              )}
+            </div>
           </div>
         ))}
 
+        {/* Live Transcript */}
         {liveTranscript && (
-          <div className="p-3 rounded-md bg-yellow-100 text-yellow-900">
-            <strong>{currentRole === "user" ? "You" : "Doctor"} (typing...):</strong>{" "}
-            {liveTranscript}
+          <div className={`flex ${currentRole === "user" ? "justify-end" : "justify-start"}`}>
+            <div
+              className={`max-w-[80%] p-4 rounded-2xl shadow-sm border-2 border-dashed ${
+                currentRole === "user"
+                  ? "bg-blue-100 text-blue-800 border-blue-300 ml-12"
+                  : "bg-yellow-50 text-yellow-800 border-yellow-300 mr-12"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                {currentRole === "user" ? (
+                  <User className="w-4 h-4" />
+                ) : (
+                  <Stethoscope className="w-4 h-4" />
+                )}
+                <span className="text-sm font-medium">
+                  {currentRole === "user" ? "You" : `Dr. ${sessionData.selectedDoctor.name}`} (speaking...)
+                </span>
+              </div>
+              <p className="leading-relaxed">{liveTranscript}</p>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Report Section */}
+      {/* Report Generation & Display */}
       {(reportLoading || reportGenerated) && (
-        <div className="p-4 border-t bg-gray-50 text-center">
-          {reportLoading ? (
-            <div className="flex items-center justify-center gap-2 text-blue-600">
-              <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-b-transparent rounded-full"></div>
-              <span>Generating Medical Report...</span>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="text-green-600 font-semibold flex justify-center items-center gap-2">
-                <span>✅ Medical Report Generated Successfully!</span>
+        <div className="m-6 mt-4 bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg rounded-lg">
+          <div className="p-6 pb-0">
+            <h3 className="flex items-center gap-2 text-lg font-semibold">
+              <FileText className="w-5 h-5" />
+              Medical Report
+            </h3>
+          </div>
+          <div className="p-6">
+            {reportLoading ? (
+              <div className="text-center py-6">
+                <div className="flex items-center justify-center gap-3 text-blue-600 mb-4">
+                  <div className="animate-spin h-6 w-6 border-3 border-blue-600 border-b-transparent rounded-full"></div>
+                  <span className="font-medium">Generating AI Medical Report...</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Analyzing consultation data and generating comprehensive medical report
+                </p>
               </div>
-              <div className="flex justify-center gap-3">
-                <Button onClick={viewReport} className="bg-blue-600 hover:bg-blue-700 text-white">
-                  📋 View Report
-                </Button>
-                <Button variant="outline" onClick={goToDashboard}>
-                  🏠 Back to Dashboard
-                </Button>
+            ) : medicalReport ? (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center gap-2 text-green-600 font-semibold text-lg mb-2">
+                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                      ✓
+                    </div>
+                    Medical Report Generated Successfully!
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Report generated on {new Date(medicalReport.reportDate).toLocaleString()}
+                  </p>
+                </div>
+
+                {!showReport ? (
+                  <div className="text-center space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-blue-50 p-4 rounded-lg text-center">
+                        <Activity className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+                        <p className="text-sm font-medium text-gray-700">Symptoms</p>
+                        <p className="text-xl font-bold text-blue-600">{medicalReport.symptoms?.length || 0}</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg text-center">
+                        <FileText className="w-6 h-6 mx-auto mb-2 text-green-600" />
+                        <p className="text-sm font-medium text-gray-700">Recommendations</p>
+                        <p className="text-xl font-bold text-green-600">{medicalReport.recommendations?.length || 0}</p>
+                      </div>
+                      <div className="bg-orange-50 p-4 rounded-lg text-center">
+                        <Pill className="w-6 h-6 mx-auto mb-2 text-orange-600" />
+                        <p className="text-sm font-medium text-gray-700">Medications</p>
+                        <p className="text-xl font-bold text-orange-600">{medicalReport.medications?.length || 0}</p>
+                      </div>
+                      <div className="bg-red-50 p-4 rounded-lg text-center">
+                        <AlertTriangle className="w-6 h-6 mx-auto mb-2 text-red-600" />
+                        <p className="text-sm font-medium text-gray-700">Risk Factors</p>
+                        <p className="text-xl font-bold text-red-600">{medicalReport.riskFactors?.length || 0}</p>
+                      </div>
+                    </div>
+                    <div className="flex justify-center gap-3">
+                      <Button 
+                        onClick={() => setShowReport(true)} 
+                        className="bg-blue-600 hover:bg-blue-700 shadow-lg text-white"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        View Report Details
+                      </Button>
+                      <Button 
+                        onClick={viewFullReport} 
+                        variant="outline" 
+                        className="border-blue-300 hover:bg-blue-50"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Full Report Page
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={goToDashboard}
+                        className="border-gray-300 hover:bg-gray-50"
+                      >
+                        🏠 Dashboard
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Patient Summary */}
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        Patient Summary
+                      </h4>
+                      <p className="text-gray-700">{medicalReport.patientSummary}</p>
+                    </div>
+
+                    {/* Chief Complaints */}
+                    <div className="bg-red-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        Chief Complaints
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {medicalReport.chiefComplaints?.map((complaint, idx) => (
+                          <span key={idx} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-200">
+                            {complaint}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Assessment */}
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                        <Stethoscope className="w-4 h-4" />
+                        Medical Assessment
+                      </h4>
+                      <p className="text-gray-700">{medicalReport.assessment}</p>
+                    </div>
+
+                    {/* Recommendations */}
+                    <div className="bg-yellow-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-yellow-800 mb-2 flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        Recommendations
+                      </h4>
+                      <ul className="list-disc list-inside space-y-1 text-gray-700">
+                        {medicalReport.recommendations?.map((rec, idx) => (
+                          <li key={idx}>{rec}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="flex justify-center gap-3 pt-4">
+                      <Button 
+                        onClick={() => setShowReport(false)} 
+                        variant="outline"
+                        className="border-blue-300 hover:bg-blue-50"
+                      >
+                        Hide Details
+                      </Button>
+                      <Button 
+                        onClick={viewFullReport} 
+                        className="bg-blue-600 hover:bg-blue-700 shadow-lg text-white"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Full Report Page
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={goToDashboard}
+                        className="border-gray-300 hover:bg-gray-50"
+                      >
+                        🏠 Dashboard
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="text-center py-4 text-red-600">
+                <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
+                <p>Failed to generate medical report</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from "react";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { SuggestedDoctorCard } from "./SuggestedDoctorCard";
@@ -52,7 +59,7 @@ export function AddNewSessionDialog() {
       <DialogTrigger asChild>
         <Button>Start New Consultation</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg bg-white shadow-xl rounded-xl">
         <DialogHeader>
           <DialogTitle>Add Basic Details</DialogTitle>
           <DialogDescription>
@@ -63,9 +70,9 @@ export function AddNewSessionDialog() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
-            <Button 
-              className="mt-4" 
-              onClick={fetchDoctors} 
+            <Button
+              className="mt-4"
+              onClick={fetchDoctors}
               disabled={loading || !note.trim()}
             >
               {loading ? "Fetching..." : "Suggest Doctors"}
