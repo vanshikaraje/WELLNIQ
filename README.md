@@ -43,7 +43,6 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
 CLERK_SECRET_KEY=your_clerk_secret
 DATABASE_URL=your_neon_postgres_url
 VAPI_KEY=your_vapi_api_key
-PLAYHT_API_KEY=your_playht_api_key
 ```
 
 ### 4. Start the development server  
