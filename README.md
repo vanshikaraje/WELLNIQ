@@ -60,5 +60,5 @@ Contributions are welcome! Please fork this repo and submit a PR.
 
 ---
 
-## 📜 License  
+
 
