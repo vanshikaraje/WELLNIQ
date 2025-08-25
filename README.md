@@ -1,4 +1,4 @@
-# WELLNIQ – AI Healthcare Voice Agent  
+# WELLNnIQ – AI Healthcare Voice Agent  
 
 **WELLNIQ** is an **AI-powered healthcare assistant** that provides **real-time medical consultations** using **voice and chat interaction**. Built with **Next.js**, **Vapi API**, and **PlayHT voices**, it enables users to interact with virtual doctors across multiple specialties for quick and accurate guidance.  
 
